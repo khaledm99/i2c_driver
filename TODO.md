@@ -1,6 +1,6 @@
 # Todo
 
-[] Define API
+[X] Define API
 [] Define HAL API
 [] Implement HAL API
     [] Board Init
