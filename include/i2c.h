@@ -10,12 +10,8 @@
 #ifndef I2C_H
 #define I2C_H
 
-enum Mode {
-    STANDARD,
-    FAST,
-    FAST_PLUS,
-    HIGH_SPEED 
-};
+#include <stdint.h>;
+
 
 // Forward opaque declaration for handle
 typedef struct i2c_handle_t i2c_handle_t;
@@ -23,7 +19,7 @@ typedef struct i2c_handle_t i2c_handle_t;
 // Initialization
 // Input 1: Address of statically allocated handle for output
 // Input 2: Module ID - HAL will map integers to matching MCU I2C modules
-void i2c_init(i2c_handle_t *out_handle, uint8_t module_id, Mode mode);
+void i2c_init(i2c_handle_t *out_handle, uint8_t module_id, uint32_t clock_speed_hz);
 
 // Master Send
 // Input: Handle Pointer, Slave Address, data pointer, len of data to send in bytes
