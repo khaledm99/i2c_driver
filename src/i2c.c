@@ -107,18 +107,37 @@ void i2c_init(i2c_handle_t *out_handle, uint8_t module_id, uint32_t clock_speed_
 
 void i2c_master_send(i2c_handle_t* handle, uint8_t slave_address, uint8_t *buf, uint8_t len) {
     // Write I2CMSA reg with address and write bit
+    if(!handle) return;
 
+    *(handle->I2C_BASE) = slave_address<<1;
+
+    unsigned int i = 0;
     // place data in I2CMDR reg
+    *(handle->I2C_BASE + 0x008) = buf[i];
 
     // Write I2CMCS for multiple byte transfer
 
-    // Wait until transmission done by polling I2CMCS reg BUSBSY bit until it's cleared
+    *(handle->I2C_BASE + 0x004) = 0x3;
 
-    // Check ERROR bit in I2CMCS reg for ack
+    while(1) {
+        
+        // Wait until transmission done by polling I2CMCS reg BUSBSY bit until it's cleared
+        while( *(handle->I2C_BASE + 0x004) & 0x01 != 0); 
 
-    // place data in i2CMDR reg
+        // Check ERROR bit in I2CMCS reg for ack
+        if(*(handle->I2C_BASE + 0x004) & 0x02 == 1) return;
 
-    // If i==len, transmit last bit and STOP
+        // If i==len, transmit last bit and STOP
+        if(i==len-1) {
+            *(handle->I2C_BASE + 0x004) = 0x5;
+            break;
+        }
+        i++;
+        *(handle->I2C_BASE + 0x004) = 0x1;
+        // place data in i2CMDR reg
+
+        *(handle->I2C_BASE + 0x008) = buf[i];
+    }
 }
 
 void i2c_master_receive(i2c_handle_t* handle, uint8_t slave_address, uint8_t *buf, uint8_t len);
