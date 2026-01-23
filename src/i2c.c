@@ -6,9 +6,6 @@
 #include "i2c.h"
 #include "tm4c123gh6pm.h"
 
-struct i2c_handle_t {
-    volatile uint32_t *I2C_BASE;
-};
 
 void decode_module_id(uint8_t module_id, 
                     volatile uint32_t **I2C_BASE,
@@ -24,7 +21,7 @@ void decode_module_id(uint8_t module_id,
             *RCGCGPIO_BIT = 0x02;
             *GPIO_PORT_BASE = (volatile uint32_t *)0x40005000;
             *GPIO_AFSEL_PINS = 0x0C;
-            *GPIO_PCTL_PINS = (0x11 << 12) | (0x11 << 8);
+            *GPIO_PCTL_PINS = (0x3 << 12) | (0x3 << 8);
                 // pmc3
                 // B2, B3
                 // SCL, SDA
@@ -35,7 +32,7 @@ void decode_module_id(uint8_t module_id,
             *RCGCGPIO_BIT = 0x01;
             *GPIO_PORT_BASE = (volatile uint32_t *)0x40004000;
             *GPIO_AFSEL_PINS = 0xC0;
-            *GPIO_PCTL_PINS = (0x11 << 28) | (0x11 << 24);
+            *GPIO_PCTL_PINS = (0x3 << 28) | (0x3 << 24);
             // pmc3
             // A6, A7
             break;
@@ -45,7 +42,7 @@ void decode_module_id(uint8_t module_id,
             *RCGCGPIO_BIT = 0x10;
             *GPIO_PORT_BASE = (volatile uint32_t *)0x40024000;
             *GPIO_AFSEL_PINS = 0x30;
-            *GPIO_PCTL_PINS = (0x11 << 20) | (0x11 << 16);
+            *GPIO_PCTL_PINS = (0x3 << 20) | (0x3 << 16);
             // pmc3
             // E4, E5
             break;
@@ -55,7 +52,7 @@ void decode_module_id(uint8_t module_id,
             *RCGCGPIO_BIT = 0x08;
             *GPIO_PORT_BASE = (volatile uint32_t *)0x40007000;
             *GPIO_AFSEL_PINS = 0x03;
-            *GPIO_PCTL_PINS = (0x11 << 4) | (0x11);
+            *GPIO_PCTL_PINS = (0x3 << 4) | (0x3);
             // pmc3
             // D0, D1
             break;
@@ -73,10 +70,11 @@ void i2c_init(i2c_handle_t *out_handle, uint8_t module_id, uint32_t clock_speed_
     uint8_t RCGCGPIO_BIT;
     uint8_t GPIO_AFSEL_PINS;
     uint32_t GPIO_PCTL_PINS;
-    volatile uint32_t *I2C_BASE, GPIO_PORT_BASE;
+    volatile uint32_t *I2C_BASE;
+    volatile uint32_t *GPIO_PORT_BASE;
     decode_module_id(module_id, 
             &I2C_BASE, 
-            &RCGCI2C_PIN, 
+            &RCGCI2C_BIT, 
             &RCGCGPIO_BIT, 
             &GPIO_PORT_BASE,
             &GPIO_AFSEL_PINS,
@@ -107,7 +105,7 @@ void i2c_init(i2c_handle_t *out_handle, uint8_t module_id, uint32_t clock_speed_
     out_handle->I2C_BASE = I2C_BASE
 }
 
-void i2c_master_send(i2c_handle_t* handle, uint8_t slave_address, uint8_t *buf, size_t len) {
+void i2c_master_send(i2c_handle_t* handle, uint8_t slave_address, uint8_t *buf, uint8_t len) {
     // Write I2CMSA reg with address and write bit
 
     // place data in I2CMDR reg
@@ -123,4 +121,4 @@ void i2c_master_send(i2c_handle_t* handle, uint8_t slave_address, uint8_t *buf, 
     // If i==len, transmit last bit and STOP
 }
 
-void i2c_master_receive(i2c_handle_t* handle, uint8_t slave_address, uint8_t *buf, size_t len);
+void i2c_master_receive(i2c_handle_t* handle, uint8_t slave_address, uint8_t *buf, uint8_t len);
